@@ -35,6 +35,14 @@ class YoloGRPCClient():
         self.frame_id_lock = asyncio.Lock()
         self.frame_id = 0
 
+        print_t(f"[Y] Connecting to YOLO service at {VISION_SERVICE_IP}:{YOLO_SERVICE_PORT}")
+        try:
+            channel = grpc.insecure_channel(f'{VISION_SERVICE_IP}:{YOLO_SERVICE_PORT}')
+            self.stub = hyrch_serving_pb2_grpc.YoloServiceStub(channel)
+            print_t("[Y] YOLO service connection established")
+        except Exception as e:
+            print_t(f"[Y] Failed to connect to YOLO service: {e}")
+
     def init_async_channel(self):
         channel_async = grpc.aio.insecure_channel(f'{VISION_SERVICE_IP}:{YOLO_SERVICE_PORT}')
         self.stub_async = hyrch_serving_pb2_grpc.YoloServiceStub(channel_async)

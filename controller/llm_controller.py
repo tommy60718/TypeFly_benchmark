@@ -39,18 +39,18 @@ class LLMController():
 
         if not os.path.exists(self.cache_folder):
             os.makedirs(self.cache_folder)
+        # Replace match statement with if-elif-else
+        if robot_type == RobotType.TELLO:
+            print_t("[C] Start Tello drone...")
+            self.drone: RobotWrapper = TelloWrapper()
+        elif robot_type == RobotType.GEAR:
+            print_t("[C] Start Gear robot car...")
+            from .gear_wrapper import GearWrapper
+            self.drone: RobotWrapper = GearWrapper()
+        else:
+            print_t("[C] Start virtual drone...")
+            self.drone: RobotWrapper = VirtualRobotWrapper()
         
-        match robot_type:
-            case RobotType.TELLO:
-                print_t("[C] Start Tello drone...")
-                self.drone: RobotWrapper = TelloWrapper()
-            case RobotType.GEAR:
-                print_t("[C] Start Gear robot car...")
-                from .gear_wrapper import GearWrapper
-                self.drone: RobotWrapper = GearWrapper()
-            case _:
-                print_t("[C] Start virtual drone...")
-                self.drone: RobotWrapper = VirtualRobotWrapper()
         
         self.planner = LLMPlanner(robot_type)
 

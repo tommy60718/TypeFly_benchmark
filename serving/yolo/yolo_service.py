@@ -115,7 +115,9 @@ def serve(port):
     print(f"Starting YoloService at port {port}")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     hyrch_serving_pb2_grpc.add_YoloServiceServicer_to_server(YoloService(port), server)
-    server.add_insecure_port(f'[::]:{port}')
+    bind_address = f'0.0.0.0:{port}'  # Bind to all interfaces
+    print(f"Binding to {bind_address}")
+    server.add_insecure_port(bind_address)
     server.start()
     server.wait_for_termination()
 

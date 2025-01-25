@@ -1,0 +1,33 @@
+# TypeFly_benchmark/requirements.txt
+
+torch>=2.0.0
+torchvision>=0.15.0
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+filterpy>=1.4.5
+gradio==3.50.2
+#gradio>=4.0.0
+flask>=2.0.0
+grpcio>=1.59.0
+grpcio-tools>=1.59.0
+openai>=1.0.0
+numpy>=1.24.0
+pillow>=10.0.0
+protobuf>=4.24.0
+aiohttp>=3.10.0
+
+
+# Drone Control
+djitellopy>=2.5.0  # Used in controller/abs/robot_wrapper.py for Tello drone implementation
+
+# Simulator Control
+mss>=9.0.1  # Used in controller/simulator_wrapper.py for screen capture
+pynput>=1.7.6  # Used in controller/simulator_wrapper.py for keyboard control
+
+# Environment and Configuration
+pyyaml>=6.0.1
+
+# Development Tools
+pytest>=7.4.0  # Used in tests/ directory for unit testing
+black>=23.9.1  # Used for code formatting across all Python files
+pylint>=3.0.0  # Used for code linting across all Python files
