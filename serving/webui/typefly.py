@@ -165,6 +165,7 @@ if __name__ == "__main__":
     parser.add_argument('--use_virtual_robot', action='store_true')
     parser.add_argument('--use_http', action='store_true')
     parser.add_argument('--gear', action='store_true')
+    parser.add_argument('--use_simulator', action='store_true', help='Use simulator mode for drone control')
 
     args = parser.parse_args()
     robot_type = RobotType.TELLO
@@ -172,5 +173,7 @@ if __name__ == "__main__":
         robot_type = RobotType.VIRTUAL
     elif args.gear:
         robot_type = RobotType.GEAR
+    elif args.use_simulator:
+        robot_type = RobotType.SIMULATOR
     typefly = TypeFly(robot_type, use_http=args.use_http)
     typefly.run()

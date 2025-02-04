@@ -5,6 +5,7 @@ class RobotType(Enum):
     VIRTUAL = 0
     TELLO = 1
     GEAR = 2
+    SIMULATOR = 3  # Added for simulator mode
 
 class RobotWrapper(ABC):
     movement_x_accumulator = 0
