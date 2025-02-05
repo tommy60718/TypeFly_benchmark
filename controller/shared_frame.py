@@ -4,9 +4,11 @@ from numpy.typing import NDArray
 import numpy as np
 import threading
 import time
+from typing import Union
 
 class Frame():
-    def __init__(self, image: Image.Image | NDArray[np.uint8]=None, depth: Optional[NDArray[np.int16]]=None):
+    def __init__(self, image: Union[Image.Image, NDArray[np.uint8]]=None,
+                  depth: Optional[NDArray[np.int16]]=None):
         if image is None:
             self._image_buffer = np.zeros((352, 640, 3), dtype=np.uint8)
             self._image = Image.fromarray(self._image_buffer)

@@ -34,9 +34,24 @@ class VirtualRobotWrapper(RobotWrapper):
     def land(self):
         pass
 
+    # def start_stream(self):
+    #     self.cap = cv2.VideoCapture(0)
+    #     self.stream_on = True
+
     def start_stream(self):
-        self.cap = cv2.VideoCapture(0)
+        # Try built-in camera first
+        self.cap = cv2.VideoCapture(0)  # Built-in camera
+        if not self.cap.isOpened():
+            # Try other cameras
+            self.cap = cv2.VideoCapture(1)  # External camera
+        
+        if not self.cap.isOpened():
+            print("[ERROR] Could not open any camera")
+            return False
+        
+        print(f"[INFO] Camera opened successfully: {self.cap.getBackendName()}")
         self.stream_on = True
+        return True
 
     def stop_stream(self):
         self.cap.release()

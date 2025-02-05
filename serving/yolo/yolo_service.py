@@ -14,7 +14,9 @@ ROOT_PATH = os.environ.get("ROOT_PATH", PARENT_DIR)
 SERVICE_PORT = os.environ.get("YOLO_SERVICE_PORT", "50050, 50051").split(",")
 
 MODEL_PATH = os.path.join(ROOT_PATH, "./serving/yolo/models/")
-MODEL_TYPE = "yolov8x.pt"
+# try v8s
+MODEL_TYPE = "yolov8s.pt"
+#MODEL_TYPE = "yolov8x.pt"
 
 sys.path.append(ROOT_PATH)
 sys.path.append(os.path.join(ROOT_PATH, "proto/generated"))
@@ -115,7 +117,9 @@ def serve(port):
     print(f"Starting YoloService at port {port}")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     hyrch_serving_pb2_grpc.add_YoloServiceServicer_to_server(YoloService(port), server)
-    server.add_insecure_port(f'[::]:{port}')
+    bind_address = f'0.0.0.0:{port}'  # Bind to all interfaces
+    print(f"Binding to {bind_address}")
+    server.add_insecure_port(bind_address)
     server.start()
     server.wait_for_termination()
 

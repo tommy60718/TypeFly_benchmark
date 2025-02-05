@@ -10,6 +10,7 @@ from .yolo_client import YoloClient
 from .yolo_grpc_client import YoloGRPCClient
 from .tello_wrapper import TelloWrapper
 from .virtual_robot_wrapper import VirtualRobotWrapper
+from .simulator_wrapper import SimulatorWrapper
 from .abs.robot_wrapper import RobotWrapper
 from .vision_skill_wrapper import VisionSkillWrapper
 from .llm_planner import LLMPlanner
@@ -39,18 +40,21 @@ class LLMController():
 
         if not os.path.exists(self.cache_folder):
             os.makedirs(self.cache_folder)
+        # Replace match statement with if-elif-else
+        if robot_type == RobotType.TELLO:
+            print_t("[C] Start Tello drone...")
+            self.drone: RobotWrapper = TelloWrapper()
+        elif robot_type == RobotType.GEAR:
+            print_t("[C] Start Gear robot car...")
+            from .gear_wrapper import GearWrapper
+            self.drone: RobotWrapper = GearWrapper()
+        elif robot_type == RobotType.SIMULATOR:
+            print_t("[C] Start simulator drone...")
+            self.drone: RobotWrapper = SimulatorWrapper()
+        else:
+            print_t("[C] Start virtual drone...")
+            self.drone: RobotWrapper = VirtualRobotWrapper()
         
-        match robot_type:
-            case RobotType.TELLO:
-                print_t("[C] Start Tello drone...")
-                self.drone: RobotWrapper = TelloWrapper()
-            case RobotType.GEAR:
-                print_t("[C] Start Gear robot car...")
-                from .gear_wrapper import GearWrapper
-                self.drone: RobotWrapper = GearWrapper()
-            case _:
-                print_t("[C] Start virtual drone...")
-                self.drone: RobotWrapper = VirtualRobotWrapper()
         
         self.planner = LLMPlanner(robot_type)
 
@@ -84,6 +88,9 @@ class LLMController():
         type_folder_name = 'tello'
         if robot_type == RobotType.GEAR:
             type_folder_name = 'gear'
+        elif robot_type == RobotType.SIMULATOR:
+            type_folder_name = 'simulator'
+
         with open(os.path.join(CURRENT_DIR, f"assets/{type_folder_name}/high_level_skills.json"), "r") as f:
             json_data = json.load(f)
             for skill in json_data:

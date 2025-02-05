@@ -1,7 +1,7 @@
 .PHONY: stop, start, remove, open, build
 
 SERVICE_LIST = router yolo
-GPU_OPTIONS=--gpus all
+GPU_OPTIONS=$(shell if command -v nvidia-smi >/dev/null 2>&1; then echo "--gpus all"; else echo ""; fi)
 
 validate_service:
 ifeq ($(filter $(SERVICE),$(SERVICE_LIST)),)
@@ -17,7 +17,9 @@ stop: validate_service
 start: validate_service
 	@make stop SERVICE=$(SERVICE)
 	@echo "=> Starting typefly-$(SERVICE)..."
-	docker run -td --privileged --net=host $(GPU_OPTIONS) --ipc=host \
+	docker run -td --privileged $(GPU_OPTIONS) --ipc=host \
+		--network bridge \
+		-p 50050:50050 \
 		--env-file ./docker/env.list \
     	--name="typefly-$(SERVICE)" typefly-$(SERVICE):0.1
 

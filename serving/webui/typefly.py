@@ -40,9 +40,16 @@ class TypeFly:
         with self.ui:
             gr.HTML(open(os.path.join(CURRENT_DIR, 'header.html'), 'r').read())
             gr.HTML(open(os.path.join(CURRENT_DIR, 'drone-pov.html'), 'r').read())
-            gr.ChatInterface(self.process_message, retry_btn=None, fill_height=False, examples=default_sentences).queue()
+            gr.ChatInterface(self.process_message,
+                            retry_btn=None,
+                            examples=default_sentences)
             # TODO: Add checkbox to switch between llama3 and gpt4
             # gr.Checkbox(label='Use llama3', value=False).select(self.checkbox_llama3)
+            
+            # Why: The error occurs because the yield in process_message 
+            # requires queue functionality at the Blocks level, 
+            # not just the ChatInterface level.
+            self.ui.queue() #Move queue() here to fix the error
 
     def checkbox_llama3(self):
         self.use_llama3 = not self.use_llama3
@@ -62,6 +69,8 @@ class TypeFly:
         elif len(message) == 0:
             return "[WARNING] Empty command!]"
         else:
+            # Thread 5: Task execution thread (created per command)
+            # Handles: Individual command executino, plan interpretation
             task_thread = Thread(target=self.llm_controller.execute_task_description, args=(message,))
             task_thread.start()
             complete_response = ''
@@ -99,31 +108,55 @@ class TypeFly:
             time.sleep(1.0 / 30.0)
 
     def run(self):
+        # Thread 1: Asyncio Loop Thread
         asyncio_thread = Thread(target=self.asyncio_loop.run_forever)
         asyncio_thread.start()
+        # Handles: Asynchronous operations, network communication, gRPC calls
+        # See notion for more details
 
+        # Thread 2: LLM controller thread
+        # Handles: Frame capture, YOLO detection, LLM planning, robot control
         self.llm_controller.start_robot()
         llmc_thread = Thread(target=self.llm_controller.capture_loop, args=(self.asyncio_loop,))
         llmc_thread.start()
 
+
+        # Set up Flask server for video streaming
         app = Flask(__name__)
         @app.route('/drone-pov/')
         def video_feed():
             return Response(self.generate_mjpeg_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
-        flask_thread = Thread(target=app.run, kwargs={'host': 'localhost', 'port': 50000, 'debug': True, 'use_reloader': False})
+        
+        # Thread 3: Flask server thread
+        # Handles: streaming video to web UI
+        # Debug mode enabled
+        # Reload disabled to prevent duplicate processes
+        flask_thread = Thread(target=app.run,
+                             kwargs={'host': 'localhost',
+                                     'port': 50000,
+                                     'debug': True, 
+                                     'use_reloader': False})
         flask_thread.start()
-        self.ui.launch(show_api=False, server_port=50001, prevent_thread_lock=True)
+
+        # Thread 4: Gradio UI thread
+        # Handles: Web UI, chat interface, user interactions
+        self.ui.launch(show_api=False, server_port=50001, prevent_thread_lock=True, share=True)
+
+        # Main monitoring loop
+        # Check system_stop flag every second for graceful shutdown
         while True:
             time.sleep(1)
             if self.system_stop:
                 break
 
+        # Join threads to ensure clean termination  
         llmc_thread.join()
         asyncio_thread.join()
 
+        #Shutdown robot systems
         self.llm_controller.stop_robot()
 
-        # clean self.cache_folder
+        # Remove all temporary files from cache folder
         for file in os.listdir(self.cache_folder):
             os.remove(os.path.join(self.cache_folder, file))
 
@@ -132,6 +165,7 @@ if __name__ == "__main__":
     parser.add_argument('--use_virtual_robot', action='store_true')
     parser.add_argument('--use_http', action='store_true')
     parser.add_argument('--gear', action='store_true')
+    parser.add_argument('--use_simulator', action='store_true', help='Use simulator mode for drone control')
 
     args = parser.parse_args()
     robot_type = RobotType.TELLO
@@ -139,5 +173,7 @@ if __name__ == "__main__":
         robot_type = RobotType.VIRTUAL
     elif args.gear:
         robot_type = RobotType.GEAR
+    elif args.use_simulator:
+        robot_type = RobotType.SIMULATOR
     typefly = TypeFly(robot_type, use_http=args.use_http)
     typefly.run()

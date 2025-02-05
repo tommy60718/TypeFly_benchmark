@@ -1,4 +1,4 @@
-FROM ultralytics/ultralytics:latest
+FROM ultralytics/ultralytics:latest-arm64
 RUN apt update
 RUN apt install -y nano wget
 RUN pip install grpcio-tools lapx
@@ -12,4 +12,6 @@ WORKDIR /workspace
 # generate the python files from the proto files
 RUN cd /workspace/proto && bash ./generate.sh
 
+
+EXPOSE 50050 
 CMD ["python", "./serving/yolo/yolo_service.py"]
