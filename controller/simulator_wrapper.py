@@ -16,7 +16,7 @@ SCENE_CHANGE_DISTANCE = 120
 SCENE_CHANGE_ANGLE = 90
 
 class FrameReader:
-    def __init__(self, monitor_id=1):
+    def __init__(self, monitor_id=2):
         self.sct = mss.mss()
         self.monitor = self.sct.monitors[monitor_id]
 

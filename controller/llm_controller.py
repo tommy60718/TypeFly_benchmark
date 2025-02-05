@@ -109,20 +109,39 @@ class LLMController():
 
     def skill_goto(self, object_name: str) -> Tuple[None, bool]:
         print(f'Goto {object_name}')
-        if '[' in object_name:
-            x = float(object_name.split('[')[1].split(']')[0])
-        else:
-            x = self.vision.object_x(object_name)[0]
+        max_matries=3
+        retry_delay=0.5
+        for attempt in range(max_matries):
+            try:
+                if '[' in object_name:
+                    x = float(object_name.split('[')[1].split(']')[0])
+                else:
+                    x = self.vision.object_x(object_name)[0]
 
-        print(f'>> GOTO x {x} {type(x)}')
+                if isinstance(x, str):
+                    if attempt < max_matries - 1:
+                        time.sleep(retry_delay)
+                        continue
+                    return x, True #return error on final attempt
+                
+                print(f'>> GOTO x {x} {type(x)}')
 
-        if x > 0.55:
-            self.drone.turn_cw(int((x - 0.5) * 70))
-        elif x < 0.45:
-            self.drone.turn_ccw(int((0.5 - x) * 70))
+                # legal object -> proceed with movement
+                if x > 0.55:
+                    self.drone.turn_cw(int((x - 0.5) * 70))
+                elif x < 0.45:
+                    self.drone.turn_ccw(int((0.5 - x) * 70))
 
-        self.drone.move_forward(110)
-        return None, False
+                self.drone.move_forward(110)
+                return None, False
+            
+            except Exception as e:
+                if attempt < max_matries -1:
+                    time.sleep(retry_delay)
+                    continue
+                return f"Error in goto: {str(e)}", True
+        return "Max retries exceeded in goto", True
+
 
     def skill_take_picture(self) -> Tuple[None, bool]:
         img_path = os.path.join(self.cache_folder, f"{uuid.uuid4()}.jpg")

@@ -4,9 +4,11 @@ A benchmark system for testing natural language drone control, supporting multip
 
 ## Quick Start
 
-1. Install dependencies:
+1. Install dependencies and set the API key:
 ```bash
 pip install -r requirements.txt
+#set the key
+export OPENAI_API_KEY="YOUR_KEY" 
 ```
 
 2. Start YOLO service (required for object detection):
