@@ -215,7 +215,6 @@ class LLMController():
         self.drone.connect()
         print_t("[C] Starting robot...")
         self.drone.takeoff()
-        self.drone.move_up(25)
         print_t("[C] Starting stream...")
         self.drone.start_stream()
         self.controller_wait_takeoff = False
